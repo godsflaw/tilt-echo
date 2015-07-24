@@ -1,0 +1,30 @@
+{
+  "name": "tilt-echo",
+  "version": "1.0.0",
+  "description": "Tilt Echo is a hardware device for sharing tilts over bluetooth",
+  "main": "server.js",
+  "dependencies": {
+    "bleno": "^0.1.14",
+    "noble": "^1.0.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "./run_tests",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/godsflaw/tilt-echo.git"
+  },
+  "keywords": [
+    "Tilt",
+    "Echo",
+    "bluetooth"
+  ],
+  "author": "Christopher Mooney",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/godsflaw/tilt-echo/issues"
+  },
+  "homepage": "https://github.com/godsflaw/tilt-echo#readme"
+}
