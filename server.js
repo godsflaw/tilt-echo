@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var noble          = require('noble');
+// var noble          = require('noble');
 var bleno          = require('bleno');
 var PrimaryService = bleno.PrimaryService;
 var Characteristic = bleno.Characteristic;
@@ -66,36 +66,48 @@ function _build_service() {
     });
 }
 
-noble.on('stateChange', function(state) {
+bleno.on('stateChange', function(state) {
+  console.log('on -> stateChange: ' + state + ', address = ' + bleno.address);  
+
     if (state === 'poweredOn') {
-        noble.startScanning([nearby_campaign_advertiser_manager_service_UUID]);
+          var data = new Buffer('CMP291377C6156111E58839727F642C73ED');
+          tilts[data.toString()] = data;
+          echo_tilt();
     } else {
-        noble.stopScanning();
+          bleno.stopAdvertising();
     }
 });
 
-noble.on('discover', function(peripheral) {
-    var cUUIDs = [nearby_campaign_advertiser_manager_characteristic_UUID];
-    noble.stopScanning();
-    peripheral.connect(function(error) {
-        if (error) { console.log(error); }
-        peripheral.discoverSomeServicesAndCharacteristics([], cUUIDs,
-            function(error, services, characteristics) {
-                characteristics.forEach(function(characteristic) {
-                    characteristic.read(function(error, data) {
-                        if (error)        { console.log(error); }
-                        if (data) {
-                            peripheral.disconnect(function(error) {
-                                tilts[data.toString()] = data;
-                                echo_tilt();
-                                //noble.startScanning(
-                                //    [nearby_campaign_advertiser_manager_service_UUID]
-                                //);
-                            });
-                        }
-                    });
-                });
-            }
-        );
-    });
-});
+// noble.on('stateChange', function(state) {
+//     if (state === 'poweredOn') {
+//         noble.startScanning([nearby_campaign_advertiser_manager_service_UUID]);
+//     } else {
+//         noble.stopScanning();
+//     }
+// });
+// 
+// noble.on('discover', function(peripheral) {
+//     var cUUIDs = [nearby_campaign_advertiser_manager_characteristic_UUID];
+//     noble.stopScanning();
+//     peripheral.connect(function(error) {
+//         if (error) { console.log(error); }
+//         peripheral.discoverSomeServicesAndCharacteristics([], cUUIDs,
+//             function(error, services, characteristics) {
+//                 characteristics.forEach(function(characteristic) {
+//                     characteristic.read(function(error, data) {
+//                         if (error)        { console.log(error); }
+//                         if (data) {
+//                             peripheral.disconnect(function(error) {
+//                                 tilts[data.toString()] = data;
+//                                 echo_tilt();
+//                                 //noble.startScanning(
+//                                 //    [nearby_campaign_advertiser_manager_service_UUID]
+//                                 //);
+//                             });
+//                         }
+//                     });
+//                 });
+//             }
+//         );
+//     });
+// });
