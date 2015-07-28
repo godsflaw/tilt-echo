@@ -18,7 +18,7 @@ function echo_tilt() {
         bleno.stopAdvertising(function() {
 console.log("STOP ADVERT");
             _advertising = false;
-            echo_tilt();
+            discover_tilt();
         });
     } else {
         var service = _build_service();
@@ -78,36 +78,41 @@ function _build_service() {
 //    }
 //});
 
+function discover_tilt() {
+    noble.on('discover', function(peripheral) {
+        var cUUIDs = [nearby_campaign_advertiser_manager_characteristic_UUID];
+        noble.stopScanning();
+        peripheral.connect(function(error) {
+            if (error) { console.log(error); }
+            peripheral.discoverSomeServicesAndCharacteristics([], cUUIDs,
+                function(error, services, characteristics) {
+                    characteristics.forEach(function(characteristic) {
+                        characteristic.read(function(error, data) {
+                            if (error)        { console.log(error); }
+                            if (data) {
+                                peripheral.disconnect(function(error) {
+                                    tilts[data.toString()] = data;
+//console.log(tilts);
+                                    process.nextTick(echo_tilt);
+//noble.startScanning(
+//    [nearby_campaign_advertiser_manager_service_UUID]
+//);
+                                });
+                            }
+                        });
+                    });
+                }
+            );
+        });
+    });
+
+console.log("WE DOIN' THIS");
+    noble.startScanning([nearby_campaign_advertiser_manager_service_UUID]);
+}
+
 noble.on('stateChange', function(state) {
     if (state === 'poweredOn') {
-        noble.startScanning([nearby_campaign_advertiser_manager_service_UUID]);
-    } else {
-        noble.stopScanning();
+        discover_tilt();
     }
 });
 
-noble.on('discover', function(peripheral) {
-    var cUUIDs = [nearby_campaign_advertiser_manager_characteristic_UUID];
-    noble.stopScanning();
-    peripheral.connect(function(error) {
-        if (error) { console.log(error); }
-        peripheral.discoverSomeServicesAndCharacteristics([], cUUIDs,
-            function(error, services, characteristics) {
-                characteristics.forEach(function(characteristic) {
-                    characteristic.read(function(error, data) {
-                        if (error)        { console.log(error); }
-                        if (data) {
-                            peripheral.disconnect(function(error) {
-                                tilts[data.toString()] = data;
-                                echo_tilt();
-                                //noble.startScanning(
-                                //    [nearby_campaign_advertiser_manager_service_UUID]
-                                //);
-                            });
-                        }
-                    });
-                });
-            }
-        );
-    });
-});
