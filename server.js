@@ -66,48 +66,48 @@ function _build_service() {
     });
 }
 
-bleno.on('stateChange', function(state) {
-  console.log('on -> stateChange: ' + state + ', address = ' + bleno.address);  
+//bleno.on('stateChange', function(state) {
+//  console.log('on -> stateChange: ' + state + ', address = ' + bleno.address);
+//
+//    if (state === 'poweredOn') {
+//          var data = new Buffer('CMP291377C6156111E58839727F642C73ED');
+//          tilts[data.toString()] = data;
+//          echo_tilt();
+//    } else {
+//          bleno.stopAdvertising();
+//    }
+//});
 
+noble.on('stateChange', function(state) {
     if (state === 'poweredOn') {
-          var data = new Buffer('CMP291377C6156111E58839727F642C73ED');
-          tilts[data.toString()] = data;
-          echo_tilt();
+        noble.startScanning([nearby_campaign_advertiser_manager_service_UUID]);
     } else {
-          bleno.stopAdvertising();
+        noble.stopScanning();
     }
 });
 
-// noble.on('stateChange', function(state) {
-//     if (state === 'poweredOn') {
-//         noble.startScanning([nearby_campaign_advertiser_manager_service_UUID]);
-//     } else {
-//         noble.stopScanning();
-//     }
-// });
-// 
-// noble.on('discover', function(peripheral) {
-//     var cUUIDs = [nearby_campaign_advertiser_manager_characteristic_UUID];
-//     noble.stopScanning();
-//     peripheral.connect(function(error) {
-//         if (error) { console.log(error); }
-//         peripheral.discoverSomeServicesAndCharacteristics([], cUUIDs,
-//             function(error, services, characteristics) {
-//                 characteristics.forEach(function(characteristic) {
-//                     characteristic.read(function(error, data) {
-//                         if (error)        { console.log(error); }
-//                         if (data) {
-//                             peripheral.disconnect(function(error) {
-//                                 tilts[data.toString()] = data;
-//                                 echo_tilt();
-//                                 //noble.startScanning(
-//                                 //    [nearby_campaign_advertiser_manager_service_UUID]
-//                                 //);
-//                             });
-//                         }
-//                     });
-//                 });
-//             }
-//         );
-//     });
-// });
+noble.on('discover', function(peripheral) {
+    var cUUIDs = [nearby_campaign_advertiser_manager_characteristic_UUID];
+    noble.stopScanning();
+    peripheral.connect(function(error) {
+        if (error) { console.log(error); }
+        peripheral.discoverSomeServicesAndCharacteristics([], cUUIDs,
+            function(error, services, characteristics) {
+                characteristics.forEach(function(characteristic) {
+                    characteristic.read(function(error, data) {
+                        if (error)        { console.log(error); }
+                        if (data) {
+                            peripheral.disconnect(function(error) {
+                                tilts[data.toString()] = data;
+                                echo_tilt();
+                                //noble.startScanning(
+                                //    [nearby_campaign_advertiser_manager_service_UUID]
+                                //);
+                            });
+                        }
+                    });
+                });
+            }
+        );
+    });
+});
