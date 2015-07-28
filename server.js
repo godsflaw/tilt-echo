@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-// var noble          = require('noble');
+var noble          = require('noble');
 var bleno          = require('bleno');
 var PrimaryService = bleno.PrimaryService;
 var Characteristic = bleno.Characteristic;
