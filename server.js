@@ -10,36 +10,60 @@ var nearby_campaign_advertiser_manager_service_UUID =
 var nearby_campaign_advertiser_manager_characteristic_UUID =
     'a28a102255d547ee898d1c6ff0c9a113';
 
-var current_echo;
+var tilts = {};
+var _advertising = false;
 
-function echo_tilt(campaign) {
-    var characteristic = new Characteristic({
-        uuid: nearby_campaign_advertiser_manager_characteristic_UUID,
-        properties    : [ 'read' ],
-        onReadRequest : function(offset, callback) {
-            if (offset > campaign.length) {
-                return callback(Characteristic.RESULT_INVALID_OFFSET, null);
-            } else if (offset === 0) {
-                return callback(Characteristic.RESULT_SUCCESS, campaign);
-            } else {
-                var data = campaign.slice(offset);
-                return callback(Characteristic.RESULT_SUCCESS, data);
+function echo_tilt() {
+    if (_advertising) {
+        bleno.stopAdvertising(function() {
+console.log("STOP ADVERT");
+            _advertising = false;
+            echo_tilt();
+        });
+    } else {
+        var service = _build_service();
+
+console.log("ADVERT:");
+console.log(tilts);
+console.log();
+        bleno.startAdvertising('echo', [ service.uuid ], function(error) {
+console.log('on -> advertisingStart: ' + (error ? 'error ' + error : 'success'));
+            if (!error) {
+                _advertising = true;
+                bleno.setServices([ service ]);
             }
-        },
-    });
+        });
+    }
+}
 
-    var service = new PrimaryService({
+function _build_service() {
+    var characteristics = [];
+
+    for (var uuid in tilts) {
+        var tilt = tilts[uuid];
+        var on_read = function(tilt) {
+            return function(offset, callback) {
+                if (offset > tilt.length) {
+                    return callback(Characteristic.RESULT_INVALID_OFFSET, null);
+                } else if (offset === 0) {
+                    return callback(Characteristic.RESULT_SUCCESS, tilt);
+                } else {
+                    var data = tilt.slice(offset);
+                    return callback(Characteristic.RESULT_SUCCESS, data);
+                }
+            };
+        };
+        characteristics.push(new Characteristic({
+            uuid: nearby_campaign_advertiser_manager_characteristic_UUID,
+            properties    : [ 'read' ],
+            onReadRequest : on_read(tilts[uuid]),
+        }));
+    }
+
+    return new PrimaryService({
         uuid            : nearby_campaign_advertiser_manager_service_UUID,
-        characteristics : [ characteristic ],
+        characteristics : characteristics,
     });
-
-    bleno.on('advertisingStart', function(error) {
-        console.log('on -> advertisingStart: ' + (error ? 'error ' + error : 'success'));
-        if (!error) { bleno.setServices([ service ]); }
-    });
-
-console.log("BROADCAST: " + campaign.toString());
-    bleno.startAdvertising('echo', [ service.uuid ]);
 }
 
 noble.on('stateChange', function(state) {
@@ -52,21 +76,24 @@ noble.on('stateChange', function(state) {
 
 noble.on('discover', function(peripheral) {
     var cUUIDs = [nearby_campaign_advertiser_manager_characteristic_UUID];
+    noble.stopScanning();
     peripheral.connect(function(error) {
         if (error) { console.log(error); }
         peripheral.discoverSomeServicesAndCharacteristics([], cUUIDs,
             function(error, services, characteristics) {
-                characteristics[0].read(function(error, data) {
-                    if (error)        { console.log(error); }
-                    if (current_echo) { clearInterval(current_echo); }
-                    if (data) {
-                        peripheral.disconnect(function(error) {
-                            noble.stopScanning();
-                            console.log("DO TEH ECHO");
-                            //current_echo = setInterval(echo_tilt, 1000, data);
-                            echo_tilt(data);
-                        });
-                    }
+                characteristics.forEach(function(characteristic) {
+                    characteristic.read(function(error, data) {
+                        if (error)        { console.log(error); }
+                        if (data) {
+                            peripheral.disconnect(function(error) {
+                                tilts[data.toString()] = data;
+                                echo_tilt();
+                                //noble.startScanning(
+                                //    [nearby_campaign_advertiser_manager_service_UUID]
+                                //);
+                            });
+                        }
+                    });
                 });
             }
         );
