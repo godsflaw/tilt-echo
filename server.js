@@ -43,6 +43,13 @@ function _build_service() {
         var tilt = tilts[uuid];
         var on_read = function(tilt) {
             return function(offset, callback) {
+//                if (offset === 22) {
+//                    process.nextTick(function() {
+//                        noble.startScanning(
+//                            [nearby_campaign_advertiser_manager_service_UUID]
+//                        );
+//                    });
+//                }
                 if (offset > tilt.length) {
                     return callback(Characteristic.RESULT_INVALID_OFFSET, null);
                 } else if (offset === 0) {
@@ -81,7 +88,6 @@ function _build_service() {
 function discover_tilt() {
     noble.on('discover', function(peripheral) {
         var cUUIDs = [nearby_campaign_advertiser_manager_characteristic_UUID];
-        noble.stopScanning();
         peripheral.connect(function(error) {
             if (error) { console.log(error); }
             peripheral.discoverSomeServicesAndCharacteristics([], cUUIDs,
@@ -92,8 +98,9 @@ function discover_tilt() {
                             if (data) {
                                 peripheral.disconnect(function(error) {
                                     tilts[data.toString()] = data;
-//console.log(tilts);
-                                    process.nextTick(echo_tilt);
+                                    noble.stopScanning();
+console.log(tilts);
+                                    echo_tilt();
 //noble.startScanning(
 //    [nearby_campaign_advertiser_manager_service_UUID]
 //);
@@ -115,4 +122,3 @@ noble.on('stateChange', function(state) {
         discover_tilt();
     }
 });
-
