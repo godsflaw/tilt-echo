@@ -95,7 +95,7 @@ function discover_tilt() {
                                     var bcast = function() {
                                         child_process.exec(
                                             '/srv/tilt-echo/bcast.arm ' +
-                                            data.toString(), { timeout : 60000 }
+                                            data.toString(), { timeout : 60000 },
                                             function (error, stdout, stderr) {
                                                 bcast();
                                             }
