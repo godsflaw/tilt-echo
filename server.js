@@ -93,7 +93,8 @@ function discover_tilt() {
                                     //echo_tilt();
                                     // hax for now
                                     child_process.exec(
-                                        './bcast.arm ' + data.toString()
+                                        '/srv/tilt-echo/bcast.arm ' +
+                                        data.toString()
                                     );
                                 });
                             }
