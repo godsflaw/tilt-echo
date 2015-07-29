@@ -91,7 +91,8 @@ function discover_tilt() {
                                     noble.stopScanning();
                                     //tilts[data.toString()] = data;
                                     //echo_tilt();
-                                    child_process.execFile(
+                                    // hax for now
+                                    child_process.exec(
                                         './bcast.arm ' + data.toString()
                                     );
                                 });
