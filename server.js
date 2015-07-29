@@ -92,10 +92,16 @@ function discover_tilt() {
                                     //tilts[data.toString()] = data;
                                     //echo_tilt();
                                     // hax for now
-                                    child_process.exec(
-                                        '/srv/tilt-echo/bcast.arm ' +
-                                        data.toString()
-                                    );
+                                    var bcast = function() {
+                                        child_process.exec(
+                                            '/srv/tilt-echo/bcast.arm ' +
+                                            data.toString(), { timeout : 60000 }
+                                            function (error, stdout, stderr) {
+                                                bcast();
+                                            }
+                                        );
+                                    }
+                                    bcast();
                                 });
                             }
                         });
