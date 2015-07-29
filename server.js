@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/local/bin/node
 
 var child_process  = require('child_process');
 var noble          = require('noble');
