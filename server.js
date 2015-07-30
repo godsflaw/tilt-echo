@@ -21,9 +21,9 @@ noble.on('discover', function(peripheral) {
                             peripheral.disconnect(function(error) {
                                 noble.stopScanning();
                                 var advertise = function() {
-                                    child_process.exec(
-                                        '/srv/tilt-echo/advertise.js ' +
-                                        data.toString(),
+                                    child_process.execFile(
+                                        '/srv/tilt-echo/bcast.arm',
+                                        [ data.toString() ],
                                         { timeout : 60000 },
                                         function (error, stdout, stderr) {
                                             advertise();
